@@ -1,12 +1,56 @@
 defmodule NookBook.Data.Setup do
+  require Logger
+
   @tables [
     NookBook.Data.GenericCache
   ]
 
-  def setup() do
+  def setup(:primary) do
+    Logger.info("Setting up mnesia for primary node")
     :mnesia.start()
     create_schema()
     create_tables()
+  end
+
+  def setup(:member) do
+    Node.connect(Application.get_env(:nook_book, :primary_node))
+    Logger.info("Setting up mnesia for member node, cluster peers:")
+    Logger.info(inspect(nodes()))
+
+    [existing_node | _] = Node.list([:visible])
+    name = Node.self()
+
+    :mnesia.start()
+
+    # add this node to the list of existing db nodes
+    {:ok, _} = :rpc.call(existing_node, :mnesia, :change_config, [:extra_db_nodes, [name]])
+
+    # by default mnesia will give you an in-ram copy schema, so we need to change to disc copies
+    :mnesia.change_table_copy_type(:schema, name, :disc_copies)
+
+    # copy the schema to the local node with disc_copies (ram+disk)
+    # the schema is a table that is created by and used by mnesia
+    :mnesia.add_table_copy(:schema, name, :disc_copies)
+
+    sync_remote_tables_to_local_disk()
+  end
+
+  def sync_remote_tables_to_local_disk() do
+    name = Node.self()
+
+    # what are all the tables that the mnesia cluster knows about on all nodes?
+    :mnesia.system_info(:tables)
+    |> Enum.each(fn table ->
+      # check if this table is in disc_copies
+      case name in :mnesia.table_info(table, :disc_copies) do
+        true ->
+          :ok
+        false ->
+          Logger.info("Syncing #{table}")
+          # copy this table to local node with disc copies (ram+disk)
+          :mnesia.add_table_copy(table, name, :disc_copies)
+      end
+    end)
   end
 
   def create_tables() do
