@@ -19,6 +19,7 @@ config :nook_book, cluster_role: System.get_env("CLUSTER_ROLE", "member") |> Str
 
 config :nook_book, NookBookWeb.Endpoint,
   server: true,
+  http: [port: 4000],
   url: [host: "#{name}.nookbook.online"],
   cache_static_manifest: "priv/static/cache_manifest.json",
   secret_key_base: "LxyVl081UsQFpS5Bpe4n1cTjMkscPBQlO/W73tfO/CmIgIJfXELycLQzhjcY9Wfg"
