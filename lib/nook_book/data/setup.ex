@@ -13,7 +13,7 @@ defmodule NookBook.Data.Setup do
   end
 
   def setup(:member) do
-    Node.connect(Application.get_env(:nook_book, :primary_node))
+    # Node.connect(Application.get_env(:nook_book, :primary_node))
     Logger.info("Setting up mnesia for member node, cluster peers:")
     Logger.info(inspect(nodes()))
 

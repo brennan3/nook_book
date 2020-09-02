@@ -12,9 +12,12 @@ defmodule NookBook.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: NookBook.PubSub},
       # Start the Endpoint (http/https)
-      NookBookWeb.Endpoint
+      NookBookWeb.Endpoint,
       # Start a worker by calling: NookBook.Worker.start_link(arg)
       # {NookBook.Worker, arg}
+
+      {Cluster.Supervisor, [Application.get_env(:libcluster, :topologies), [name:
+NookBook.ClusterSupervisor]]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
