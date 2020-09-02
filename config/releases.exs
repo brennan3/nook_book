@@ -1,3 +1,5 @@
+import Config
+
 name = "mnesia2c"
 
 config :libcluster,
