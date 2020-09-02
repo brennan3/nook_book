@@ -1,5 +1,4 @@
 defmodule NookBook.Data.Setup do
-
   @tables [
     NookBook.Data.GenericCache
   ]
@@ -19,6 +18,7 @@ defmodule NookBook.Data.Setup do
     case table_exists?(module.table_name()) do
       true ->
         {:ok, :already_created}
+
       false ->
         :mnesia.create_table(
           module.table_name(),
